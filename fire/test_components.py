@@ -439,10 +439,9 @@ def function_with_varargs(arg1, arg2, arg3=1, *varargs):  # pylint: disable=keyw
     arg3: Flags docstring.
     *varargs: Accepts unlimited positional args.
   Returns:
-    The unlimited positional args.
+    The positional arguments and the unlimited positional args.
   """
-  del arg1, arg2, arg3  # Unused.
-  return varargs
+  return arg1, arg2, arg3, varargs
 
 
 def function_with_keyword_arguments(arg1, arg2=3, **kwargs):

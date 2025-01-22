@@ -199,6 +199,23 @@ class FireTest(testutils.BaseTestCase):
     self.assertEqual(fire.Fire(tc.TypedProperties,
                                command=['charlie', 'triple', 'w']), 'www')
 
+  def testFireVarArgsFunction(self):
+    self.assertEqual(
+        fire.Fire(
+            tc.function_with_varargs, 
+            command=["a", "b", "c", "d", "e"]),
+        ("a", "b", "c", ("d", "e")))
+    self.assertEqual(
+        fire.Fire(
+            tc.function_with_varargs, 
+            command=["a", "b", "--arg1", "c", "d", "e"]),
+        ("c", "a", "b", ("d", "e")))
+    self.assertEqual(
+        fire.Fire(
+            tc.function_with_varargs, 
+            command=["a", "--arg1", "c", "--", "--arg2", "d", "e", "--"]),
+        ("c", "a", "--", ("--arg2", "d", "e")))
+
   def testFireVarArgs(self):
     self.assertEqual(
         fire.Fire(tc.VarArgs,
@@ -215,6 +232,11 @@ class FireTest(testutils.BaseTestCase):
     self.assertEqual(
         fire.Fire(tc.VarArgs, command=['varchars', '3', '4', 'c', 'd', 'e']),
         (3, 4, 'cde'))
+    self.assertEqual(
+        fire.Fire(
+            tc.VarArgs, 
+            command=['varchars', '--beta', '1', '--alpha', '3', '--', 'hello' '--alpha', '--beta', "--"]),
+        (3, 1, '--hello--alpha--beta'))
 
   def testFireKeywordArgs(self):
     self.assertEqual(

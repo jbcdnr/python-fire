@@ -746,7 +746,9 @@ def _MakeParseFn(fn, metadata):
       varargs[index] = _ParseValue(value, None, None, metadata)
 
     varargs = parsed_args + varargs
-    remaining_args += remaining_kwargs
+    
+    remaining_args, remaining_args_after_barrier = _SplitAtKwargsBarrier(remaining_args)
+    remaining_args = remaining_args + remaining_kwargs + remaining_args_after_barrier
 
     consumed_args = args[:len(args) - len(remaining_args)]
     return (varargs, kwargs), consumed_args, remaining_args, capacity
@@ -842,6 +844,8 @@ def _ParseKeywordArgs(args, fn_spec):
   remaining_args = []
   fn_keywords = fn_spec.varkw
   fn_args = fn_spec.args + fn_spec.kwonlyargs
+  
+  args, args_after_barrier = _SplitAtKwargsBarrier(args)
 
   if not args:
     return kwargs, remaining_kwargs, remaining_args
@@ -930,7 +934,7 @@ def _ParseKeywordArgs(args, fn_spec):
     else:  # not _IsFlag(argument)
       remaining_args.append(argument)
 
-  return kwargs, remaining_kwargs, remaining_args
+  return kwargs, remaining_kwargs, remaining_args + args_after_barrier
 
 
 def _IsFlag(argument):
@@ -986,3 +990,11 @@ def _ParseValue(value, index, arg, metadata):
       parse_fn = default
 
   return parse_fn(value)
+
+
+def _SplitAtKwargsBarrier(args):
+  if "--" in args:
+    barrier_position = args.index("--")
+    return args[:barrier_position], args[barrier_position:]
+  else:
+    return args, []
